@@ -26,7 +26,6 @@ jobs:
       - name: Go to terraform folder
         run: |
           cd terraform
-          ls -la
           terraform init
           terraform plan
           terraform apply --auto-approve
