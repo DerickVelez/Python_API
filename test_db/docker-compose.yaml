@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: testdb_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminpass
+      POSTGRES_DB: testdb
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
