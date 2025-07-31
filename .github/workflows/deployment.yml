@@ -23,28 +23,21 @@ jobs:
           echo test again
       - name: Check Runner Hostname
         run: hostname
-      - name: Go to IAC code
+      - name: Go to terraform folder
         run: |
-          cd infrastructure_code
+          cd terraform
           ls -la
           terraform init
+          terraform plan
           terraform apply --auto-approve
       - name: execute aws ecr login command
-        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975391190725.dkr.ecr.us-east-1.amazonaws.com
-      - name: assign credentials to docker login
-        run: sudo docker login -u AWS -p $(aws ecr get-login-password) 975391190725.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest
-      - name: build docker images
-        run: sudo docker build -t my-flask-app .
+        run:  |
+          aws ecr-public get-login-password --region us-east-1 > password.txt
+          docker login --username AWS --password-stdin public.ecr.aws < password.txt
       - name: tag docker image
-        run: sudo docker tag my-flask-app:latest 975391190725.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest
+        run: docker tag fast_aws_image:latest public.ecr.aws/v6k1s9z9/demo-public-app-repo:latest
       - name: tag docker image
-        run: sudo docker push 975391190725.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest
-      - name: update ecr service
-        run: aws ecs update-service --cluster flask-cluster --service flask-service --force-new-deployment
-      - name: tag docker image
-        run: sudo docker tag grafana/grafana-oss:latest 975391190725.dkr.ecr.us-east-1.amazonaws.com/my-grafana:latest
-      - name: tag docker image
-        run: sudo docker push 975391190725.dkr.ecr.us-east-1.amazonaws.com/my-grafana:latest
-      - name: update ecr service
-        run: aws ecs update-service --cluster flask-cluster --service grafana-service --force-new-deployment
+        run: docker push public.ecr.aws/v6k1s9z9/demo-public-app-repo:latest
+      - name: update ecs service
+        run: aws ecs update-service   --cluster demo-cluster   --service demo-app-service   --force-new-deployment   --region us-east-1
     

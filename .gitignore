@@ -68,3 +68,20 @@ node_modules/
 yarn.lock
 package-lock.json
 "@ | Out-File -Encoding UTF8 .gitignore
+
+
+# Terraform state
+*.tfstate
+*.tfstate.backup
+
+# Terraform crash logs
+crash.log
+
+# Terraform plan files
+*.tfplan
+
+# .terraform directory (holds provider plugins, modules, etc.)
+.terraform/
+
+# Terraform lock file (optional, but often ignored if using Terraform < 1.1)
+.terraform.lock.hcl
