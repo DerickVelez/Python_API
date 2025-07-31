@@ -1,0 +1,70 @@
+@"
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+*.egg-info/
+
+# Python cache
+*.pyc
+
+# VSCode settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# IDE files
+.idea/
+*.iml
+
+# Docker
+*.log
+*.pid
+*.tar
+*.db
+*.sock
+
+# Local .env or secrets
+.env
+.env.*
+
+# Pytest cache
+.pytest_cache/
+
+# Migrations (optional – only if you generate and exclude)
+alembic/versions/
+
+# Build / dist
+build/
+dist/
+*.egg
+*.whl
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+.cache
+
+# MySQL/Postgres dumps
+*.sql
+
+# Logs
+*.log
+
+# Local dev databases
+*.sqlite3
+
+# node (if applicable)
+node_modules/
+
+# Yarn / NPM lock files (if using frontend)
+yarn.lock
+package-lock.json
+"@ | Out-File -Encoding UTF8 .gitignore
