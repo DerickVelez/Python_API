@@ -1,4 +1,13 @@
 
+
+terraform {
+  backend "s3" {
+    bucket = "demoapp-test"
+    key    = "terraform/infrastructure.tfstate"
+    region = "us-east-1"
+    use_lockfile = true
+  }
+}
 # Configure the AWS Provider
 provider "aws" {
   region = "us-east-1" # You can change this to your desired region
