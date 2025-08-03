@@ -30,9 +30,9 @@ jobs:
           terraform plan
           terraform apply --auto-approve
       - name: execute aws ecr login command
-        run:  |
-          aws ecr-public get-login-password --region us-east-1 > password.txt
-          docker login --username AWS --password-stdin public.ecr.aws < password.txt
+        run: |
+          $password = aws ecr-public get-login-password --region us-east-1
+          docker login --username AWS --password $password public.ecr.aws
       - name: tag docker image
         run: docker tag fast_aws_image:latest public.ecr.aws/v6k1s9z9/demo-public-app-repo:latest
       - name: tag docker image
