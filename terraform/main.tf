@@ -118,8 +118,8 @@ resource "aws_security_group" "ecs_task" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -216,6 +216,18 @@ resource "aws_ecrpublic_repository" "app" {
   }
 }
 
+resource "aws_ecrpublic_repository" "grafana_repo" {
+  repository_name = "grafana-public-app-repo"
+  
+
+  # A catalog data block is required for public repositories
+  catalog_data {
+    about_text        = "Demo public repository"
+    operating_systems = ["Linux"]
+    usage_text        = "Used for the ECS demo project"
+  }
+}
+
 # --------------------------------------------------------------------------------------------------
 # Cloudwatch
 # --------------------------------------------------------------------------------------------------
@@ -228,6 +240,14 @@ resource "aws_cloudwatch_log_group" "ecs_app" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "grafana_app_logs" {
+  name              = "/ecs/grafana-app"
+  retention_in_days = 7
+
+  tags = {
+    Name = "grafana-app-log-group"
+  }
+}
 # --------------------------------------------------------------------------------------------------
 # ECS (Elastic Container Service)
 # --------------------------------------------------------------------------------------------------
@@ -242,8 +262,8 @@ resource "aws_ecs_task_definition" "app" {
   family                   = "demo-app-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "1024"
-  memory                   = "2048"
+  cpu                      = "256"
+  memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
  
@@ -294,6 +314,62 @@ resource "aws_ecs_task_definition" "app" {
 }
 
 
+# ECS Task Definition
+resource "aws_ecs_task_definition" "grafana_app" {
+  family                   = "grafana-app-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+
+ 
+
+  container_definitions = jsonencode([
+    {
+      name      = "demo-app-container"
+      image     = aws_ecrpublic_repository.grafana_repo.repository_uri
+      essential = true
+      portMappings = [
+        
+        {
+          containerPort = 3000
+          hostPort      = 3000
+        }
+      ]
+      environment = [
+        {
+          name  = "DATABASE_HOST"
+          value = aws_db_instance.postgres_db.address
+        },
+        {
+        name = "DB_username"
+        value = "dempoappdb"
+        },
+        { 
+          name = "DB_PASSWORD"
+          value = "admin"
+        },
+        {
+          name = "DB_NAME"
+          value = "DemoAppSecurePass1!"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.ecs_app.name
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+     
+    }
+  ])
+
+  depends_on = [aws_cloudwatch_log_group.ecs_app]
+}
+
 # ECS Service
 resource "aws_ecs_service" "app" {
   name            = "demo-app-service"
@@ -312,6 +388,22 @@ resource "aws_ecs_service" "app" {
   
 }
 
+resource "aws_ecs_service" "grafana_service" {
+  name            = "grafana-app-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.grafana_app.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = [aws_subnet.public.id, aws_subnet.public_b.id]
+    security_groups = [aws_security_group.ecs_task.id]
+    assign_public_ip = true
+  }
+
+  depends_on = [aws_internet_gateway.main]
+  
+}
 
 # --------------------------------------------------------------------------------------------------
 # IAM Role for ECS Task Execution
