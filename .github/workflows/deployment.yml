@@ -39,4 +39,10 @@ jobs:
         run: docker push public.ecr.aws/v6k1s9z9/demo-public-app-repo:latest
       - name: update ecs service
         run: aws ecs update-service   --cluster demo-cluster   --service demo-app-service   --force-new-deployment   --region us-east-1
+      - name: tag docker image
+        run: docker tag grafana/grafana:10.4.2 public.ecr.aws/v6k1s9z9/demo-public-app-repo:latest
+      - name: tag docker image
+        run: docker push public.ecr.aws/v6k1s9z9/grafana-public-app-repo:latest
+      - name: update ecs service
+        run: aws ecs update-service   --cluster demo-cluster   --service grafana-app-service   --force-new-deployment   --region us-east-1
     

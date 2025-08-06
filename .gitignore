@@ -85,3 +85,6 @@ crash.log
 
 # Terraform lock file (optional, but often ignored if using Terraform < 1.1)
 .terraform.lock.hcl
+
+
+../password.txt
